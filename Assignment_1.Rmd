@@ -1,0 +1,43 @@
+---
+title: "assignment 1"
+author: "Rishitha Reddy Muddasani"
+date: "2023-01-29"
+output:
+  word_document: default
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r}
+
+#importing the dataset.
+tesla_d <- read.csv("/Users/nikhilreddya/Documents/RISHI/Tesla Stock Price (2010 to 2023).csv")
+#view the dataset.
+
+View(tesla_d)
+```
+
+
+```{r}
+#transforming data
+stock_open<- (tesla_d$Open-mean(tesla_d$Open)/var(tesla_d$Open) )
+stock_open
+
+#histogram is displayed below.
+#for the stock close price of tesla in stock market.
+hist(tesla_d$Close)
+```
+
+```{r}
+#scatter plot
+library(ggplot2)
+N <- tesla_d$Open
+R <- tesla_d$Close
+plot(N,R, main = "Price of TESLA at stock market", xlab = "Open of stock", ylab = "Close of stock" )
+#The above graphical representation is a scatterplot. 
+#The selected variables are Open and Close stock price at stock market
+
+```
+
+#Dataset source :- https://www.kaggle.com/datasets/muhammadbilalhaneef/-tesla-stock-price-from-2010-to-2023
