@@ -1,0 +1,128 @@
+---
+title: "Assignment_4"
+author: "Rishitha Reddy Muddasani"
+date: "2023-03-18"
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
+
+Loading the data set and the Libraries
+```{r}
+library(flexclust)
+library(cluster)
+library(tidyverse)
+library(factoextra)
+library(FactoMineR)
+library(tinytex)
+library(ggcorrplot)
+
+P_Data<-read.csv("~/Downloads/Pharmaceuticals.csv")
+P_Data<-na.omit(P_Data)
+```
+*TASK 1*
+The 21 firms are grouped using the numerical variables (1–9).
+```{r}
+row.names(P_Data)<-P_Data[,1]
+Clustering_dataset<-P_Data[,3:11]
+```
+data scalability
+```{r}
+set.seed(143)
+Scaled_data<-scale(Clustering_dataset)
+```
+
+Kmeans computation using random K values
+```{r}
+set.seed(143)
+kmeans_2_centers<-kmeans(Scaled_data,centers = 2, nstart = 15)
+kmeans_4_centers<-kmeans(Scaled_data,centers = 4, nstart = 15)
+kmeans_8_centers<-kmeans(Scaled_data,centers = 8, nstart = 15)
+plot_kmeans_2_centers<-fviz_cluster(kmeans_2_centers,data = Scaled_data) + ggtitle("K=2")
+plot_kmeans_4_centers<-fviz_cluster(kmeans_4_centers,data = Scaled_data) + ggtitle("K=4")
+plot_kmeans_8_centers<-fviz_cluster(kmeans_8_centers,data = Scaled_data) + ggtitle("K=8")
+plot_kmeans_2_centers
+plot_kmeans_4_centers
+plot_kmeans_8_centers
+```
+
+Finding the optimal K appropriate for clustering using WSS and Silhouette
+
+```{r}
+wss<-fviz_nbclust(Scaled_data,kmeans,method="wss")
+silhouette<-fviz_nbclust(Scaled_data,kmeans,method="silhouette")
+wss
+silhouette
+distance<-dist(Scaled_data,metho='euclidean')
+fviz_dist(distance)
+```
+k is 2 from WSS and 5 from silhouette. The number 5 ensures that the sum of squires inside each cluster is minimal and that there is considerable spacing between them.
+
+*TASK 2*
+
+Using Kmeans to find an appropriate k 
+```{r}
+set.seed(143)
+kmeans_5_centers<-kmeans(Scaled_data,centers = 5, nstart = 10)
+kmeans_5_centers
+plot_kmeans_5_centers<-fviz_cluster(kmeans_5_centers,data = Scaled_data) + ggtitle("K=5")
+plot_kmeans_5_centers
+```
+
+
+```{r}
+Clustering_dataset_1<-Clustering_dataset%>% mutate(Cluster_no=kmeans_5_centers$cluster)%>% group_by(Cluster_no)%>%summarise_all('mean')
+Clustering_dataset_1
+```
+
+
+Following clusters have been created for companies:
+
+Cluster_1= ABT,AHM,AZN,BMY,LLY,NVS,SGP,WYE
+
+Cluster_2= BAY,CHTT,IVX
+
+Cluster_3=AVE,ELN,MRX,WPI
+
+Cluster_4=AGN,PHA
+
+Cluster_5=GSK,JNJ,MRK,PFE
+
+
+This can be inferred from the clusters that were generated.
+
+1. Cluster 1 contains a collection of businesses with a modest return on equity and return on investment.
+
+2. Cluster 2 Companies have extremely low ROA, ROE, market capitalization, and asset turnover. This means that these businesses are exceedingly dangerous.
+
+3. Similar to cluster 2, Cluster 3 features group corporations, but with slightly lower risk.
+ 
+4. Companies in cluster 4 are more risky than those in cluster 2 because they have very good PE ratios but weak ROA and ROE.
+
+5. Companies in Cluster 5 have excellent ROE, ROA, and market capitalization.
+
+
+*TASK 3*
+
+```{r}
+#Is there a pattern in the clusters with respect to the numerical 
+#variables (10 to 12)? (those \n #not used in forming the clusters)
+Clustering_datase_2<- P_Data[,12:14] %>% mutate(Clusters=kmeans_5_centers$cluster)
+ggplot(Clustering_datase_2, mapping = aes(factor(Clusters), fill =Median_Recommendation))+geom_bar(position='dodge')+labs(x ='Clusters',y='Frequency')
+ggplot(Clustering_datase_2, mapping = aes(factor(Clusters),fill = Location))+geom_bar(position = 'dodge')+labs(x ='Clusters',y='Frequency')
+ggplot(Clustering_datase_2, mapping = aes(factor(Clusters),fill = Exchange))+geom_bar(position = 'dodge')+labs(x ='Clusters',y='Frequency')
+```
+
+Clusters and the variable Median Recommendation exhibit a pattern, as can be observed. Similar to what the second cluster shows between moderate buy and hold, the third cluster recommends between moderate purchase and moderate sell. The majority of pharmaceutical businesses are based in the US, as can be seen from the location graph, although there isn't much of a pattern there. With the exception of the bulk of companies being listed on NYSE, there is no discernible relationship between clusters and exchanges.
+
+
+*TASK 4* - Naming clusters:
+
+[It is done based on the net Market capitalization(size) and Return on Assets(money)]
+
+Cluster 1: Large-Thousands
+Cluster 2: Extra Small-Penny
+Cluster 3: Small- Dollars
+Cluster 4: Medium-Hundreds
+Cluster 5: Extra Large-Millions 
